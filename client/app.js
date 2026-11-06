@@ -122,6 +122,9 @@ $('#cartBtn').onclick = () => { $('#cartDrawer').hidden = false; renderCart(); }
 $('#closeCart').onclick = () => { $('#cartDrawer').hidden = true; };
 $('#trackBtn').onclick = () => { $('#orderModal').hidden = false; };
 $('#closeOrder').onclick = () => { $('#orderModal').hidden = true; };
+// Also close with Escape, or by clicking the dimmed backdrop outside the card.
+$('#orderModal').addEventListener('click', (e) => { if (e.target === $('#orderModal')) $('#orderModal').hidden = true; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('#orderModal').hidden = true; $('#cartDrawer').hidden = true; } });
 $('#doTrack').onclick = track;
 $('#search').addEventListener('input', renderCatalog);
 $('#spiceFilter').addEventListener('change', renderCatalog);
