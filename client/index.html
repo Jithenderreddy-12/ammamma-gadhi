@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ammamma Gadhi — Homemade Pickles, Order Online</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">🥒</span><div><h1>Ammamma Gadhi</h1><p>Homemade Andhra pickles • Hyderabad, India</p></div></div>
+  <div class="top-actions">
+    <input id="search" type="search" placeholder="Search pickles… (e.g. mango)" aria-label="Search pickles">
+    <select id="spiceFilter" aria-label="Filter by spice level"><option value="">All spice levels</option><option value="mild">Mild</option><option value="medium">Medium</option><option value="hot">Hot 🌶️</option></select>
+    <button id="trackBtn" class="btn ghost">Track Order</button>
+    <button id="cartBtn" class="btn primary">🛒 Cart (<span id="cartCount">0</span>)</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero"><h2>Pickles made the way Ammamma makes them.</h2><p>Small batches, cold-pressed groundnut oil, no preservatives. Free delivery over ₹499 • COD available • UPI via Razorpay (test mode).</p></section>
+  <section id="catalog" class="grid" aria-live="polite"><p class="loading">Loading pickles…</p></section>
+
+  <section id="how" class="how">
+    <h2>How ordering works</h2>
+    <ol><li><b>Pick</b> a pickle &amp; size, add to cart.</li><li><b>Checkout</b> — name, phone, address, pincode, delivery slot.</li><li><b>Pay</b> by UPI / Razorpay, or Cash on Delivery.</li><li><b>Track</b> your order by order ID or phone number.</li></ol>
+    <p class="note">Learning note: prices &amp; stock come from the server (<code>GET /api/products</code>). The browser never decides a price — the server re-checks everything at checkout.</p>
+  </section>
+</main>
+
+<!-- Cart drawer -->
+<aside id="cartDrawer" class="drawer" hidden>
+  <div class="drawer-head"><h2>Your Cart</h2><button id="closeCart" class="btn ghost">✕</button></div>
+  <div id="cartItems"></div>
+  <div id="cartTotals" class="totals"></div>
+  <form id="checkoutForm" class="checkout">
+    <h3>Delivery details</h3>
+    <input name="customer_name" placeholder="Full name *" required minlength="2">
+    <input name="phone" placeholder="10-digit mobile * (e.g. 98490 12345)" required inputmode="numeric">
+    <textarea name="address" placeholder="Full delivery address *" required minlength="10"></textarea>
+    <input name="pincode" placeholder="6-digit pincode *" required inputmode="numeric">
+    <select name="delivery_slot"><option value="today-evening">Today — Evening</option><option value="tomorrow-morning" selected>Tomorrow — Morning</option><option value="tomorrow-evening">Tomorrow — Evening</option><option value="weekend">Weekend</option></select>
+    <fieldset><legend>Payment</legend>
+      <label><input type="radio" name="payment_method" value="cod" checked> 💵 Cash on Delivery</label>
+      <label><input type="radio" name="payment_method" value="razorpay"> 💳 UPI / Card via Razorpay <small>(test mode — no real charge)</small></label>
+    </fieldset>
+    <div id="checkoutError" class="error" role="alert"></div>
+    <button type="submit" class="btn primary big">Place Order</button>
+  </form>
+</aside>
+
+<!-- Order confirmation / tracking -->
+<section id="orderModal" class="modal" hidden>
+  <div class="modal-card">
+    <button id="closeOrder" class="btn ghost">✕</button>
+    <div id="orderResult"></div>
+    <div class="track">
+      <h3>Track another order</h3>
+      <input id="trackId" placeholder="Order ID (e.g. 12)" inputmode="numeric">
+      <input id="trackPhone" placeholder="Or phone number">
+      <button id="doTrack" class="btn primary">Track</button>
+      <div id="trackResult"></div>
+    </div>
+  </div>
+</section>
+
+<footer><p>Ammamma Gadhi • Demo storefront for learning end-to-end development • Prices in INR, GST 5% included in totals at checkout • Free delivery over ₹499</p></footer>
+<script src="app.js"></script>
+</body>
+</html>

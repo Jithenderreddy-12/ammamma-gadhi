@@ -1,0 +1,87 @@
+# Ammamma Gadhi — local production-like stack.
+#
+#   customer -> nginx (port 80) -> api1 + api2 (port 3000) -> Postgres
+#
+# Why a separate db-init step? Both API replicas seed the database on
+# startup when it is empty (see seedIfEmpty in server/db.js). If both
+# replicas started at once against an empty database they could race the
+# seed and insert the catalogue twice. db-init seeds exactly once, and the
+# APIs only start after it completes successfully.
+#
+# Usage:
+#   docker compose up --build     # start everything
+#   docker compose ps             # check health (all should be healthy)
+#   curl http://localhost/health  # -> {"ok":true,"status":"ok"}
+#   docker compose down           # stop (add -v to wipe the database)
+#
+# Razorpay stays in MOCK mode unless you set RAZORPAY_KEY_ID /
+# RAZORPAY_KEY_SECRET / RAZORPAY_WEBHOOK_SECRET in a .env file next to
+# this compose file. Never commit that .env.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pickles}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pickles}
+      POSTGRES_DB: ${POSTGRES_DB:-pickles}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pickles} -d ${POSTGRES_DB:-pickles}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # One-shot: create the schema and seed the 12 pickles, exactly once.
+  db-init:
+    build: .
+    command: ["node", "server/seed.js"]
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-pickles}:${POSTGRES_PASSWORD:-pickles}@db:5432/${POSTGRES_DB:-pickles}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api1:
+    build: .
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-pickles}:${POSTGRES_PASSWORD:-pickles}@db:5432/${POSTGRES_DB:-pickles}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+
+  api2:
+    build: .
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-pickles}:${POSTGRES_PASSWORD:-pickles}@db:5432/${POSTGRES_DB:-pickles}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      api1:
+        condition: service_healthy
+      api2:
+        condition: service_healthy
+
+volumes:
+  pgdata:

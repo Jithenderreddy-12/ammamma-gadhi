@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.13.1",
+    "razorpay": "^2.9.6",
+    "dotenv": "^16.4.5"
+  },
+  "description": "Ammamma Gadhi \u2014 end-to-end pickle ordering app for a new Indian pickles business \u2014 Express + SQLite (dev) / Postgres (prod), vanilla JS frontend, Razorpay + COD, Jest + Supertest tests.",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 15000
+  },
+  "main": "server/index.js",
+  "name": "ammamma-gadhi",
+  "scripts": {
+    "dev": "node server/index.js",
+    "seed": "node server/seed.js",
+    "start": "node server/index.js",
+    "test": "jest --runInBand --detectOpenHandles"
+  },
+  "version": "1.0.0"
+}
